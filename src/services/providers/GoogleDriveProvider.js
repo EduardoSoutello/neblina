@@ -183,19 +183,39 @@ export async function refreshGoogleToken(refreshToken) {
 
 export async function exchangeGoogleCode(code) {
   const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+  const isProd = import.meta.env.PROD
   
-  const res = await fetch('/api/google-proxy', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      code,
-      client_id: CLIENT_ID,
-      redirect_uri: window.location.origin
+  let res;
+  if (isProd) {
+    // Em produção, usa a Vercel Serverless Function para não expor o SECRET
+    res = await fetch('/api/google-proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code,
+        client_id: CLIENT_ID,
+        redirect_uri: window.location.origin
+      })
     })
-  })
+  } else {
+    // Em localhost, faz a requisição direta (pois Vercel API não roda no Vite dev)
+    const CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET
+    res = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        redirect_uri: window.location.origin,
+        grant_type: 'authorization_code'
+      })
+    })
+  }
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
-    throw new Error(err.error_description || err.error || 'Google token exchange failed')
+    throw new Error(err.error || err.error_description || 'Google token exchange failed')
   }
   return res.json()
 }

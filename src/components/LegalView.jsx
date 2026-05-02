@@ -1,9 +1,15 @@
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Shield, FileText, Lock, Eye } from 'lucide-react'
 import { useLang } from '../i18n'
 
-export default function LegalView({ isOpen, onClose, isStatic = false }) {
+export default function LegalView({ isOpen, onClose, isStatic = false, initialTab = 'privacy' }) {
   const { t } = useLang()
+  const [activeTab, setActiveTab] = useState(initialTab)
+
+  useEffect(() => {
+    setActiveTab(initialTab)
+  }, [initialTab])
 
   if (!isOpen) return null
 
@@ -66,41 +72,66 @@ export default function LegalView({ isOpen, onClose, isStatic = false }) {
         >
           {/* Header */}
           <header style={{ 
-            padding: '1.5rem 2rem', 
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            padding: '1.5rem 2rem 0', 
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            flexDirection: 'column',
+            gap: '1.5rem',
             background: 'rgba(255,255,255,0.02)'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <Shield size={20} color="var(--accent-primary)" />
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{t('sidebar.legal')}</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <Shield size={20} color="var(--accent-primary)" />
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{t('sidebar.legal')}</h2>
+              </div>
+              {isStatic ? (
+                <button 
+                  onClick={() => window.location.href = '/'}
+                  style={{ 
+                    background: 'rgba(255,255,255,0.05)', 
+                    border: '1px solid rgba(255,255,255,0.1)', 
+                    borderRadius: '12px', 
+                    padding: '0.4rem 0.8rem',
+                    cursor: 'pointer', 
+                    color: '#fff',
+                    fontSize: '0.75rem',
+                    fontWeight: 600
+                  }}
+                >
+                  Neblina App
+                </button>
+              ) : (
+                <button 
+                  onClick={onClose}
+                  style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }}
+                >
+                  <X size={18} />
+                </button>
+              )}
             </div>
-            {isStatic ? (
+
+            {/* Tabs */}
+            <div style={{ display: 'flex', gap: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               <button 
-                onClick={() => window.location.href = '/'}
+                onClick={() => setActiveTab('privacy')}
                 style={{ 
-                  background: 'rgba(255,255,255,0.05)', 
-                  border: '1px solid rgba(255,255,255,0.1)', 
-                  borderRadius: '12px', 
-                  padding: '0.4rem 0.8rem',
-                  cursor: 'pointer', 
-                  color: '#fff',
-                  fontSize: '0.75rem',
-                  fontWeight: 600
+                  background: 'none', border: 'none', color: activeTab === 'privacy' ? 'var(--accent-primary)' : 'rgba(255,255,255,0.4)',
+                  padding: '0.75rem 0', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer',
+                  borderBottom: activeTab === 'privacy' ? '2px solid var(--accent-primary)' : '2px solid transparent'
                 }}
               >
-                Neblina App
+                {t('auth.privacy')}
               </button>
-            ) : (
               <button 
-                onClick={onClose}
-                style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }}
+                onClick={() => setActiveTab('terms')}
+                style={{ 
+                  background: 'none', border: 'none', color: activeTab === 'terms' ? 'var(--accent-primary)' : 'rgba(255,255,255,0.4)',
+                  padding: '0.75rem 0', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer',
+                  borderBottom: activeTab === 'terms' ? '2px solid var(--accent-primary)' : '2px solid transparent'
+                }}
               >
-                <X size={18} />
+                {t('auth.terms')}
               </button>
-            )}
+            </div>
           </header>
 
           {/* Scrollable Content */}
@@ -113,7 +144,7 @@ export default function LegalView({ isOpen, onClose, isStatic = false }) {
             fontSize: '0.95rem'
           }}>
             {/* TERMS SECTION */}
-            {(window.location.pathname === '/terms' || !isStatic) && (
+            {activeTab === 'terms' && (
               <section style={{ marginBottom: isStatic ? '0' : '3rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#fff' }}>
                   <FileText size={18} />
@@ -130,11 +161,8 @@ export default function LegalView({ isOpen, onClose, isStatic = false }) {
               </section>
             )}
 
-            {/* DIVIDER if showing both */}
-            {!isStatic && <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '2rem 0' }} />}
-
             {/* PRIVACY SECTION */}
-            {(window.location.pathname === '/privacy' || !isStatic) && (
+            {activeTab === 'privacy' && (
               <section style={{ marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#fff' }}>
                   <Lock size={18} />

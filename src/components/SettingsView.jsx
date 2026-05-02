@@ -307,7 +307,7 @@ export default function SettingsView({ currentUser, userData, onLogout, onShowLe
 
                   <div style={{ marginTop: '2.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.5rem', textAlign: 'center' }}>
                     <button 
-                      onClick={onShowLegal}
+                      onClick={() => onShowLegal('privacy')}
                       style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
                     >
                       {t('sidebar.legal')}

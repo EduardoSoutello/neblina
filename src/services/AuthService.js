@@ -5,6 +5,8 @@
 
 import {
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -15,6 +17,7 @@ import {
   updateProfile,
   reload,
 } from 'firebase/auth'
+import { Capacitor } from '@capacitor/core'
 import { auth, db } from '../firebase'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 
@@ -52,7 +55,9 @@ export function getPasswordStrength(password) {
 
 // ── Friendly error messages ───────────────────────────────────────────────────
 
-function humanizeError(code) {
+function humanizeError(e) {
+  console.error("Auth Error:", e)
+  const code = e?.code
   const map = {
     'auth/email-already-in-use':    'Este email já está cadastrado.',
     'auth/invalid-email':           'Email inválido.',
@@ -64,7 +69,7 @@ function humanizeError(code) {
     'auth/popup-closed-by-user':    'Login cancelado.',
     'auth/cancelled-popup-request': 'Login cancelado.',
   }
-  return map[code] || 'Ocorreu um erro. Tente novamente.'
+  return map[code] || `Ocorreu um erro: ${e?.message || code || 'Desconhecido'}`
 }
 
 // ── Firestore User Sync ───────────────────────────────────────────────────────
@@ -104,17 +109,41 @@ export async function initializeUserDocument(user) {
 
 // ── Auth operations ───────────────────────────────────────────────────────────
 
-/** Sign in with Google popup */
+/** Sign in with Google (Popup on web, Redirect on mobile) */
 export async function signInWithGoogle() {
   const provider = new GoogleAuthProvider()
   provider.setCustomParameters({ prompt: 'select_account' })
+  
+  const isMobile = Capacitor.isNativePlatform()
+
   try {
-    const result = await signInWithPopup(auth, provider)
-    await initializeUserDocument(result.user)
-    return result.user
+    if (isMobile) {
+      // On mobile, popup usually fails, use redirect
+      await signInWithRedirect(auth, provider)
+      // The rest of the logic (initializeUserDocument) will happen after redirect in App.jsx
+      return null 
+    } else {
+      const result = await signInWithPopup(auth, provider)
+      await initializeUserDocument(result.user)
+      return result.user
+    }
   } catch (e) {
-    throw new Error(humanizeError(e.code))
+    throw new Error(humanizeError(e))
   }
+}
+
+/** Check for redirect result (called on app startup) */
+export async function checkRedirectResult() {
+  try {
+    const result = await getRedirectResult(auth)
+    if (result?.user) {
+      await initializeUserDocument(result.user)
+      return result.user
+    }
+  } catch (e) {
+    console.error('Redirect result error:', e)
+  }
+  return null
 }
 
 /** Register with email/password + send verification email */
@@ -128,7 +157,7 @@ export async function registerWithEmail(name, email, password) {
     await sendEmailVerification(result.user)
     return result.user
   } catch (e) {
-    throw new Error(humanizeError(e.code))
+    throw new Error(humanizeError(e))
   }
 }
 
@@ -139,7 +168,7 @@ export async function signInWithEmail(email, password) {
     await initializeUserDocument(result.user)
     return result.user
   } catch (e) {
-    throw new Error(humanizeError(e.code))
+    throw new Error(humanizeError(e))
   }
 }
 
@@ -161,7 +190,7 @@ export async function resetPassword(email) {
   try {
     await sendPasswordResetEmail(auth, email)
   } catch (e) {
-    throw new Error(humanizeError(e.code))
+    throw new Error(humanizeError(e))
   }
 }
 

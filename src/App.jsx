@@ -3,7 +3,7 @@ import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion
 import { Plus, X, LogOut, Cloud, Settings, Home, User, GripVertical } from 'lucide-react'
 import { useGoogleLogin, googleLogout, GoogleOAuthProvider } from '@react-oauth/google'
 import { CloudManager } from './services/CloudManager'
-import { onAuthStateChanged, signOut, initializeUserDocument } from './services/AuthService'
+import { onAuthStateChanged, signOut, initializeUserDocument, checkRedirectResult } from './services/AuthService'
 import { FIREBASE_CONFIGURED } from './firebase'
 import { useLang } from './i18n'
 import FileManager from './components/FileManager'
@@ -17,6 +17,7 @@ import EmailVerifyScreen from './components/auth/EmailVerifyScreen'
 import OAuthCallback from './components/auth/OAuthCallback'
 import SettingsView from './components/SettingsView'
 import LegalView from './components/LegalView'
+import LandingPage from './components/LandingPage'
 import { db } from './firebase'
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore'
 
@@ -117,16 +118,14 @@ function AccountReorderItem({ acc, activeAccountId, setActiveAccount, closeSideb
 
 // ── Inner app (needs GoogleOAuthProvider above) ───────────────────────────────
 
-function NeblinaAppContent({ currentUser }) {
+function NeblinaAppContent(props) {
+  const { currentUser } = props
   const { t } = useLang()
   const [accounts,        setAccounts]       = useState(() => CloudManager.accounts)
   const [activeAccountId, setActiveAccount]  = useState(null)
   const [showConnect,     setShowConnect]    = useState(false)
   const [isSidebarOpen,   setIsSidebarOpen]  = useState(false)
   const [showSettings,    setShowSettings]   = useState(false)
-  const [showLegal,       setShowLegal]      = useState(false)
-  const [showDrivePrompt, setShowDrivePrompt] = useState(false)
-  const [drivePromptLoading, setDrivePromptLoading] = useState(false)
   const [userData, setUserData] = useState(null)
   const [planWarning, setPlanWarning] = useState(null)
 
@@ -175,21 +174,7 @@ function NeblinaAppContent({ currentUser }) {
     return CloudManager.subscribe(updated => setAccounts([...updated]))
   }, [])
 
-  // Detect: logged in with Google but no Drive account linked yet
-  useEffect(() => {
-    const isGoogleUser = currentUser?.providerData?.some(p => p.providerId === 'google.com')
-    const hasDrive     = accounts.some(
-      a => a.providerId === 'googledrive' && a.email === currentUser?.email
-    )
-    const dismissed    = sessionStorage.getItem('neblina_drive_prompt_dismissed')
-    if (isGoogleUser && !hasDrive && !dismissed) {
-      // Small delay so the app settles before showing the prompt
-      const t = setTimeout(() => setShowDrivePrompt(true), 800)
-      return () => clearTimeout(t)
-    } else {
-      setShowDrivePrompt(false)
-    }
-  }, [currentUser, accounts])
+  const { showLegal, setShowLegal, showDrivePrompt, setShowDrivePrompt, drivePromptLoading, setDrivePromptLoading } = props
 
   const goHome       = () => setActiveAccount(null)
   const toggleSidebar = () => setIsSidebarOpen(s => !s)
@@ -593,7 +578,7 @@ function NeblinaAppContent({ currentUser }) {
                 currentUser={currentUser} 
                 userData={userData}
                 onLogout={() => signOut()} 
-                onShowLegal={() => setShowLegal(true)}
+                onShowLegal={(type) => { setLegalType(type || 'privacy'); setShowLegal(true) }}
               />
             ) : activeAccountId ? (
               <FileManager 
@@ -637,6 +622,11 @@ function NeblinaAppContent({ currentUser }) {
 function App({ clientId }) {
   const [authState, setAuthState] = useState('loading') // 'loading' | 'unauthenticated' | 'unverified' | 'authenticated'
   const [currentUser, setCurrentUser] = useState(null)
+  const [showAuth, setShowAuth] = useState(false)
+  const [showLegal, setShowLegal] = useState(false)
+  const [legalType, setLegalType] = useState('privacy') // 'privacy' | 'terms'
+  const [showDrivePrompt, setShowDrivePrompt] = useState(false)
+  const [drivePromptLoading, setDrivePromptLoading] = useState(false)
 
   useEffect(() => {
     if (!FIREBASE_CONFIGURED) {
@@ -662,6 +652,9 @@ function App({ clientId }) {
       }
     })
 
+    // Handle Google redirect result (for mobile)
+    checkRedirectResult()
+
     return unsubscribe
   }, [])
 
@@ -682,9 +675,32 @@ function App({ clientId }) {
     return <FirebaseSetupBanner />
   }
 
+  // Public Routes (Terms / Privacy)
+  if (window.location.pathname === '/terms' || window.location.pathname === '/privacy') {
+    const type = window.location.pathname === '/terms' ? 'terms' : 'privacy'
+    return (
+      <div style={{ background: '#0e1016', minHeight: '100vh' }}>
+        <LegalView isOpen={true} onClose={() => window.location.href = '/'} isStatic={true} initialTab={type} />
+      </div>
+    )
+  }
+
   // Not logged in
   if (authState === 'unauthenticated') {
-    return <AuthScreen onShowLegal={() => setShowLegal(true)} />
+    if (showAuth) {
+      return (
+        <AuthScreen 
+          onShowLegal={(type) => { setLegalType(type || 'privacy'); setShowLegal(true) }} 
+          onBack={() => setShowAuth(false)}
+        />
+      )
+    }
+    return (
+      <LandingPage 
+        onGetStarted={() => setShowAuth(true)} 
+        onShowLegal={(type) => { setLegalType(type || 'privacy'); setShowLegal(true) }}
+      />
+    )
   }
 
   // Logged in but email not verified
@@ -723,7 +739,24 @@ function App({ clientId }) {
 
   return (
     <GoogleOAuthProvider clientId={clientId}>
-      <NeblinaAppContent currentUser={currentUser} />
+      <NeblinaAppContent 
+        currentUser={currentUser} 
+        showLegal={showLegal}
+        setShowLegal={setShowLegal}
+        legalType={legalType}
+        setLegalType={setLegalType}
+        showDrivePrompt={showDrivePrompt}
+        setShowDrivePrompt={setShowDrivePrompt}
+        drivePromptLoading={drivePromptLoading}
+        setDrivePromptLoading={setDrivePromptLoading}
+      />
+      {showLegal && (
+        <LegalView 
+          isOpen={true} 
+          onClose={() => setShowLegal(false)} 
+          initialTab={legalType}
+        />
+      )}
     </GoogleOAuthProvider>
   )
 }

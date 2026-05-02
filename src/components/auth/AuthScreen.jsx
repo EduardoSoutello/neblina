@@ -390,11 +390,14 @@ function RegisterTab({ onGoogleLogin }) {
 
 // ── Main AuthScreen ───────────────────────────────────────────────────────────
 
-export default function AuthScreen({ onShowLegal }) {
+export default function AuthScreen(props) {
+  const { onShowLegal } = props
   const { t } = useLang()
   const [tab, setTab]       = useState('login')   // 'login' | 'register'
   const [gLoading, setGLoading] = useState(false)
   const [gError, setGError]     = useState('')
+
+  const { onBack } = props
 
   async function handleGoogleLogin() {
     setGError('')
@@ -441,9 +444,20 @@ export default function AuthScreen({ onShowLegal }) {
           boxShadow: '0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,242,255,0.06)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '1.75rem',
         }}
       >
+        {/* Back button */}
+        <button 
+          onClick={onBack}
+          style={{ 
+            position: 'absolute', top: '1.5rem', left: '1.5rem', 
+            background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', 
+            fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' 
+          }}
+        >
+          ← Voltar
+        </button>
+
         {/* Logo */}
         <div style={{ textAlign: 'center' }}>
           <img src="/Neblina_logo2.png" alt="Neblina" style={{ height: 80, margin: '0 auto' }} />
