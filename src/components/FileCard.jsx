@@ -33,7 +33,7 @@ function formatDate(iso) {
 }
 
 export default function FileCard({ 
-  file, onOpen, onDelete, onRename, onTransfer, 
+  file, onOpen, onDelete, onRename, onTransfer, onDownload,
   showProvider = false, viewMode = 'grid',
   selected = false, onSelect
 }) {
@@ -114,7 +114,7 @@ export default function FileCard({
               <div className="file-menu" onClick={e => e.stopPropagation()}>
                 <button onClick={() => { onRename && setRenaming(true); setMenuOpen(false) }}><Edit3 size={12} /> {t('file.rename')}</button>
                 <button onClick={() => { onTransfer?.(file); setMenuOpen(false) }}><Copy size={12} /> {t('file.copyTo')}</button>
-                <button onClick={() => { /* download */ setMenuOpen(false) }}><Download size={12} /> {t('file.download')}</button>
+                <button onClick={() => { onDownload?.(file); setMenuOpen(false) }}><Download size={12} /> {t('file.download')}</button>
                 <button onClick={() => { onDelete?.(file); setMenuOpen(false) }} style={{ color: '#ff4444' }}><Trash2 size={12} /> {t('file.delete')}</button>
               </div>
             )}
@@ -201,7 +201,7 @@ export default function FileCard({
           <div className="file-menu" onClick={e => e.stopPropagation()}>
             <button onClick={() => { setRenaming(true); setMenuOpen(false) }}><Edit3 size={12} /> {t('file.rename')}</button>
             <button onClick={() => { onTransfer?.(file); setMenuOpen(false) }}><Copy size={12} /> {t('file.copyTo')}</button>
-            <button onClick={() => setMenuOpen(false)}><Download size={12} /> {t('file.download')}</button>
+            <button onClick={() => { onDownload?.(file); setMenuOpen(false) }}><Download size={12} /> {t('file.download')}</button>
             <button onClick={() => { onDelete?.(file); setMenuOpen(false) }} style={{ color: '#ff4444' }}><Trash2 size={12} /> {t('file.delete')}</button>
           </div>
         )}

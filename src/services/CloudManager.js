@@ -530,6 +530,12 @@ class CloudManagerClass {
     const authParam = await this._getAuthParam(accountId)
     return provider.getDownloadUrl(authParam, itemId, fileObj)
   }
+
+  async getFileBlob(accountId, file) {
+    const provider = this.getProvider(accountId)
+    const authParam = await this._getAuthParam(accountId)
+    return provider.getFileBlob(authParam, file.id || file.path, file)
+  }
 }
 
 export const CloudManager = new CloudManagerClass()

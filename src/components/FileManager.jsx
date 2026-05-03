@@ -250,6 +250,7 @@ export default function FileManager({
   const [breadcrumb,  setBreadcrumb]  = useState([])      // [{id, name}, ...]
   const [uploading,   setUploading]   = useState(false)
   const [uploadPct,   setUploadPct]   = useState(0)
+  const [downloadProgress, setDownloadProgress] = useState('')
   const [imagePreview, setImagePreview] = useState(null) // { url, name }
   const [transferFile, setTransferFile] = useState(null) // file object or array to transfer
   const [selectedIds,  setSelectedIds]  = useState(new Set())
@@ -407,6 +408,68 @@ export default function FileManager({
     }
   }
 
+  async function handleDownload(file) {
+    if (file.type === 'file') {
+      try {
+        setDownloadProgress(`Baixando ${file.name}...`)
+        const blob = await CloudManager.getFileBlob(accountId, file)
+        const { saveAs } = await import('file-saver')
+        saveAs(blob, file.name)
+      } catch(e) {
+        setError(`Erro no download: ${e.message}`)
+      } finally {
+        setDownloadProgress('')
+      }
+      return
+    }
+
+    // Download de pasta (ZIP)
+    try {
+      setDownloadProgress('Listando arquivos da pasta (pode demorar)...')
+      
+      const allFiles = []
+      async function scanFolder(folderId, path = '') {
+        const list = await CloudManager.listFiles(accountId, folderId)
+        for (const f of list) {
+          if (f.type === 'folder') {
+            await scanFolder(f.id || f.path, path + f.name + '/')
+          } else {
+            f.zipPath = path + f.name
+            allFiles.push(f)
+          }
+        }
+      }
+      
+      await scanFolder(file.id || file.path, '')
+      
+      if (allFiles.length === 0) {
+        alert('A pasta está vazia.')
+        setDownloadProgress('')
+        return
+      }
+
+      const JSZip = (await import('jszip')).default
+      const { saveAs } = await import('file-saver')
+      const zip = new JSZip()
+      
+      for (let i = 0; i < allFiles.length; i++) {
+        const f = allFiles[i]
+        setDownloadProgress(`Baixando para o ZIP (${i + 1}/${allFiles.length})...`)
+        const blob = await CloudManager.getFileBlob(accountId, f)
+        zip.file(f.zipPath, blob)
+      }
+      
+      setDownloadProgress('Gerando arquivo ZIP final...')
+      const zipBlob = await zip.generateAsync({ type: 'blob' })
+      saveAs(zipBlob, `${file.name}.zip`)
+      
+    } catch(e) {
+      setError(`Erro no download da pasta: ${e.message}`)
+    } finally {
+      setDownloadProgress('')
+    }
+  }
+
   const filtered = files.filter(f => f.name.toLowerCase().includes(search.toLowerCase()))
 
   if (!account) {
@@ -498,6 +561,14 @@ export default function FileManager({
           />
         </div>
       )}
+      
+      {/* Download progress */}
+      {downloadProgress && (
+        <div style={{ background: 'rgba(0, 242, 255, 0.1)', border: '1px solid rgba(0, 242, 255, 0.3)', borderRadius: 12, padding: '0.75rem 1rem', fontSize: '0.82rem', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+          {downloadProgress}
+        </div>
+      )}
 
       {/* Error */}
       {error && (
@@ -538,6 +609,7 @@ export default function FileManager({
                   onDelete={handleDelete}
                   onRename={handleRename}
                   onTransfer={(f) => setTransferFile(f)}
+                  onDownload={handleDownload}
                   selected={selectedIds.has(file.id || file.path)}
                   onSelect={toggleSelect}
                 />
