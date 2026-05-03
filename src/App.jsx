@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion'
-import { Plus, X, LogOut, Cloud, Settings, Home, User, GripVertical } from 'lucide-react'
+import { 
+  Plus, X, LogOut, Cloud, Settings, Home, User, GripVertical, 
+  Search, Sparkles, Command, Globe, Shield, Zap, CreditCard, ChevronRight 
+} from 'lucide-react'
 import { useGoogleLogin, googleLogout, GoogleOAuthProvider } from '@react-oauth/google'
 import { CloudManager } from './services/CloudManager'
 import { onAuthStateChanged, signOut, initializeUserDocument, checkRedirectResult } from './services/AuthService'

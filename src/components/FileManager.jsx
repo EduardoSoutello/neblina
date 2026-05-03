@@ -379,7 +379,8 @@ export default function FileManager({
     if (!confirm(t('fm.deleteConfirm', { name: file.name }))) return
     try {
       await CloudManager.deleteFile(accountId, file.id || file.path)
-      setFiles(prev => prev.filter(f => f.id !== file.id))
+      const key = file.id || file.path
+      setFiles(prev => prev.filter(f => (f.id || f.path) !== key))
     } catch (e) {
       setError(e.message)
     }
