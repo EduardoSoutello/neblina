@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CloudManager } from '../services/CloudManager'
 import { useLang } from '../i18n'
 import { ChevronRight, Folder, FolderPlus, X, Loader2, UploadCloud, FileText } from 'lucide-react'
+import { PROVIDER_CONFIG } from './ProviderBadge'
 
 export default function TransferModal({ file, files, sourceAccountId, onClose }) {
   const [targetAccount, setTargetAccount] = useState(null)
@@ -155,7 +156,9 @@ export default function TransferModal({ file, files, sourceAccountId, onClose })
                           borderRadius: '12px', cursor: 'pointer', color: 'white', textAlign: 'left'
                         }}
                       >
-                        <img src={`/${acc.providerId}.svg`} alt={acc.providerId} style={{ width: 24, height: 24 }} />
+                        <div style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ transform: 'scale(1.5)' }}>{PROVIDER_CONFIG[acc.providerId]?.icon}</span>
+                        </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontWeight: 500, fontSize: '0.9rem' }}>{acc.name}</div>
                           <div style={{ fontSize: '0.8rem', opacity: 0.5 }}>{acc.email}</div>
