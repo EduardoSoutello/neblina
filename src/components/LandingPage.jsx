@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
-import { Cloud, Shield, Zap, Globe, ArrowRight } from 'lucide-react'
+import { Cloud, Shield, Zap, Globe, ArrowRight, ArrowLeftRight } from 'lucide-react'
 import { useLang } from '../i18n'
+import ProviderBadge from './ProviderBadge'
 
 export default function LandingPage({ onGetStarted, onShowLegal }) {
   const { t } = useLang()
@@ -75,12 +76,7 @@ export default function LandingPage({ onGetStarted, onShowLegal }) {
             padding: '1rem',
             boxShadow: '0 40px 100px rgba(0,0,0,0.5)',
           }}>
-            <img 
-              src="/src/assets/hero.png" 
-              alt="Dashboard Preview" 
-              style={{ width: '100%', borderRadius: '16px', display: 'block' }}
-              onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.style.height = '400px'; e.target.parentNode.style.background = 'linear-gradient(135deg, #1e293b, #0f172a)' }}
-            />
+            <HeroIllustration />
           </div>
         </motion.div>
       </section>
@@ -134,6 +130,56 @@ export default function LandingPage({ onGetStarted, onShowLegal }) {
           filter: brightness(1.1);
         }
       `}</style>
+    </div>
+  )
+}
+
+function HeroIllustration() {
+  return (
+    <div style={{ height: 400, background: 'linear-gradient(135deg, #1e293b, #0f172a)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+      {/* Background Clouds */}
+      <motion.div animate={{ x: [-30, 30, -30] }} transition={{ repeat: Infinity, duration: 12, ease: 'linear' }} style={{ position: 'absolute', opacity: 0.05, width: '100%', height: '100%', pointerEvents: 'none' }}>
+        <Cloud size={150} style={{ position: 'absolute', top: '10%', left: '15%' }} />
+        <Cloud size={200} style={{ position: 'absolute', top: '40%', right: '10%' }} />
+        <Cloud size={100} style={{ position: 'absolute', bottom: '15%', left: '30%' }} />
+      </motion.div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '2vw', zIndex: 1, width: '100%', maxWidth: 600, justifyContent: 'center' }}>
+        {/* Dropbox */}
+        <motion.div animate={{ y: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}>
+          <div style={{ background: 'rgba(0, 97, 255, 0.1)', padding: '2.5rem', borderRadius: '28px', border: '1px solid rgba(0, 97, 255, 0.3)', boxShadow: '0 20px 50px rgba(0, 97, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ transform: 'scale(1.5)' }}><ProviderBadge providerId="dropbox" size="lg" /></div>
+          </div>
+        </motion.div>
+
+        {/* Arrows and Transfer */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', flex: 1 }}>
+          <div style={{ position: 'relative', width: '100%', height: 2, background: 'rgba(255,255,255,0.1)' }}>
+            <motion.div
+              initial={{ left: 0, opacity: 0 }}
+              animate={{ left: '100%', opacity: [0, 1, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
+              style={{ position: 'absolute', top: -4, width: 10, height: 10, borderRadius: '50%', background: 'var(--accent-primary)', boxShadow: '0 0 15px var(--accent-primary)' }}
+            />
+          </div>
+          <ArrowLeftRight size={24} style={{ color: 'rgba(255,255,255,0.3)' }} />
+          <div style={{ position: 'relative', width: '100%', height: 2, background: 'rgba(255,255,255,0.1)' }}>
+            <motion.div
+              initial={{ right: 0, opacity: 0 }}
+              animate={{ right: '100%', opacity: [0, 1, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: 'linear', delay: 0.75 }}
+              style={{ position: 'absolute', top: -4, width: 10, height: 10, borderRadius: '50%', background: '#D9272E', boxShadow: '0 0 15px #D9272E' }}
+            />
+          </div>
+        </div>
+
+        {/* MEGA */}
+        <motion.div animate={{ y: [10, -10, 10] }} transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}>
+          <div style={{ background: 'rgba(217, 39, 46, 0.1)', padding: '2.5rem', borderRadius: '28px', border: '1px solid rgba(217, 39, 46, 0.3)', boxShadow: '0 20px 50px rgba(217, 39, 46, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+             <div style={{ transform: 'scale(1.5)' }}><ProviderBadge providerId="mega" size="lg" /></div>
+          </div>
+        </motion.div>
+      </div>
     </div>
   )
 }
