@@ -3,7 +3,7 @@ import { MercadoPagoConfig, Preference } from 'mercadopago'; // Unused here but 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
-  const { code, client_id, redirect_uri } = req.body;
+  const { code, refresh_token, client_id, redirect_uri, grant_type } = req.body;
   const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || process.env.VITE_GOOGLE_CLIENT_SECRET; // Aceita qualquer um dos dois nomes
 
   if (!CLIENT_SECRET) {
@@ -11,16 +11,23 @@ export default async function handler(req, res) {
   }
 
   try {
+    const params = {
+      client_id,
+      client_secret: CLIENT_SECRET,
+      grant_type: grant_type || 'authorization_code'
+    };
+
+    if (params.grant_type === 'authorization_code') {
+      params.code = code;
+      params.redirect_uri = redirect_uri;
+    } else if (params.grant_type === 'refresh_token') {
+      params.refresh_token = refresh_token;
+    }
+
     const response = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        code,
-        client_id,
-        client_secret: CLIENT_SECRET,
-        redirect_uri,
-        grant_type: 'authorization_code'
-      })
+      body: new URLSearchParams(params)
     });
 
     const data = await response.json();

@@ -163,17 +163,33 @@ export const GoogleDriveProvider = {
 
 export async function refreshGoogleToken(refreshToken) {
   const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
-  const CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET // Might not be needed for PKCE but often required for server-side tokens
+  const isProd = import.meta.env.PROD
   
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
-      client_id: CLIENT_ID
+  let res;
+  if (isProd) {
+    res = await fetch('/api/google-proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        refresh_token: refreshToken,
+        client_id: CLIENT_ID,
+        grant_type: 'refresh_token'
+      })
     })
-  })
+  } else {
+    const CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET
+    res = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET
+      })
+    })
+  }
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
     throw new Error(err.error_description || 'Google token refresh failed')
