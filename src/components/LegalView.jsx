@@ -4,7 +4,7 @@ import { X, Shield, FileText, Lock, Eye } from 'lucide-react'
 import { useLang } from '../i18n'
 
 export default function LegalView({ isOpen, onClose, isStatic = false, initialTab = 'privacy' }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const [activeTab, setActiveTab] = useState(initialTab)
 
   useEffect(() => {
@@ -164,33 +164,86 @@ export default function LegalView({ isOpen, onClose, isStatic = false, initialTa
             {/* PRIVACY SECTION */}
             {activeTab === 'privacy' && (
               <section style={{ marginBottom: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#fff' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem', color: '#fff' }}>
                   <Lock size={18} />
                   <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>{t('auth.privacy')}</h3>
                 </div>
-                <p style={{ marginBottom: '1rem' }}>
-                  Sua privacidade é nossa prioridade técnica. Veja como tratamos seus dados:
-                </p>
-                <div style={{ display: 'grid', gap: '1.25rem', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
-                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.25rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--accent-primary)' }}>
-                      <Eye size={16} />
-                      <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>O que NÃO vemos</span>
-                    </div>
-                    <p style={{ fontSize: '0.85rem', opacity: 0.7 }}>
-                      Não temos acesso ao conteúdo dos seus arquivos. Todo o tráfego ocorre entre o seu navegador e os provedores de nuvem.
+                
+                {lang === 'pt' ? (
+                  <>
+                    <p style={{ marginBottom: '1.5rem', fontSize: '0.95rem', opacity: 0.9 }}>
+                      Nossa Política de Privacidade descreve como nosso aplicativo interage com os dados do usuário do Google.
                     </p>
-                  </div>
-                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.25rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#00ff41' }}>
-                      <Lock size={16} />
-                      <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>Senhas e Tokens</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                      <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: 'var(--accent-primary)' }}>
+                          <Eye size={16} />
+                          <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>1. Dados Acessados</span>
+                        </div>
+                        <p style={{ fontSize: '0.88rem', opacity: 0.85, lineHeight: 1.6 }}>
+                          Nosso aplicativo solicita acesso ao endereço de e-mail principal da conta Google e informações básicas de perfil.
+                        </p>
+                      </div>
+                      
+                      <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#00ff41' }}>
+                          <Lock size={16} />
+                          <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>2. Uso dos Dados</span>
+                        </div>
+                        <p style={{ fontSize: '0.88rem', opacity: 0.85, lineHeight: 1.6 }}>
+                          Utilizamos esses dados exclusivamente para autenticação e criação de perfil local. O aplicativo apenas processa os metadados e os links dos arquivos, sem acessar ou avaliar o conteúdo dos documentos armazenados no Google Drive. As informações não são compartilhadas com terceiros e nunca são usadas para treinar modelos de inteligência artificial.
+                        </p>
+                      </div>
+
+                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.25rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.04)', opacity: 0.85 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#a855f7' }}>
+                          <Shield size={16} />
+                          <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>Segurança Geral (Senhas e Tokens)</span>
+                        </div>
+                        <p style={{ fontSize: '0.82rem', opacity: 0.75 }}>
+                          Senhas do MEGA são criptografadas com AES-GCM usando seu UID exclusivo como chave. Todo o tráfego de arquivos ocorre de forma direta e segura entre o seu navegador e os provedores de nuvem.
+                        </p>
+                      </div>
                     </div>
-                    <p style={{ fontSize: '0.85rem', opacity: 0.7 }}>
-                      Senhas do MEGA são criptografadas com AES-GCM usando seu UID exclusivo como chave.
+                  </>
+                ) : (
+                  <>
+                    <p style={{ marginBottom: '1.5rem', fontSize: '0.95rem', opacity: 0.9 }}>
+                      Our Privacy Policy describes how our application interacts with Google user data.
                     </p>
-                  </div>
-                </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                      <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: 'var(--accent-primary)' }}>
+                          <Eye size={16} />
+                          <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>1. Accessed Data</span>
+                        </div>
+                        <p style={{ fontSize: '0.88rem', opacity: 0.85, lineHeight: 1.6 }}>
+                          Our application requests access to the primary email address of your Google account and basic profile information.
+                        </p>
+                      </div>
+                      
+                      <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#00ff41' }}>
+                          <Lock size={16} />
+                          <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>2. Data Use</span>
+                        </div>
+                        <p style={{ fontSize: '0.88rem', opacity: 0.85, lineHeight: 1.6 }}>
+                          We use this data exclusively for authentication and local profile creation. The application only processes file metadata and links, without accessing or evaluating the content of documents stored in Google Drive. This information is not shared with third parties and is never used to train artificial intelligence models.
+                        </p>
+                      </div>
+
+                      <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.25rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.04)', opacity: 0.85 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: '#a855f7' }}>
+                          <Shield size={16} />
+                          <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>General Security (Passwords and Tokens)</span>
+                        </div>
+                        <p style={{ fontSize: '0.82rem', opacity: 0.75 }}>
+                          MEGA passwords are encrypted with AES-GCM using your unique UID as the key. All file traffic occurs directly and securely between your browser and the cloud providers.
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                )}
               </section>
             )}
           </div>
@@ -203,7 +256,9 @@ export default function LegalView({ isOpen, onClose, isStatic = false, initialTa
             fontSize: '0.8rem',
             opacity: 0.4
           }}>
-            Neblina — Smart Cloud Management // Última atualização: 01 de Maio de 2026
+            {lang === 'pt' 
+              ? 'Neblina — Gestão Inteligente de Nuvem // Última atualização: 01 de Maio de 2026' 
+              : 'Neblina — Smart Cloud Management // Last updated: May 01, 2026'}
           </footer>
         </motion.div>
       </motion.div>
